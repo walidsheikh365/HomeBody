@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>HomeBody</title>
+    <meta name="description" content="A calm, personal workout tracker." />
+    <meta name="theme-color" content="#FBE7CF" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- PWA / iOS home screen -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="HomeBody" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+
+    <!-- Apply the saved theme before first paint to avoid a flash. -->
+    <script>
+      (function () {
+        var colors = { soleil: '#FBE7CF', luna: '#060A18', aurora: '#050E12' };
+        var theme;
+        try {
+          var raw = localStorage.getItem('homebody:v1:settings');
+          theme = raw ? JSON.parse(raw).theme : null;
+        } catch (e) {}
+        if (!colors[theme]) {
+          theme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'luna' : 'soleil';
+        }
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', colors[theme]);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

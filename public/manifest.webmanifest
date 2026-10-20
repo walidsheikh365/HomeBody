@@ -1,0 +1,17 @@
+{
+  "name": "HomeBody",
+  "short_name": "HomeBody",
+  "description": "A calm, personal workout tracker.",
+  "id": "/",
+  "start_url": "/exercises",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBE7CF",
+  "theme_color": "#FBE7CF",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
