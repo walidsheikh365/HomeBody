@@ -862,6 +862,12 @@ a {
 .chev.open {
   transform: rotate(90deg);
 }
+.show-more {
+  margin-top: 8px;
+}
+.show-more .chev {
+  color: inherit;
+}
 
 .ex-list {
   list-style: none;

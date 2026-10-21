@@ -4,6 +4,7 @@
  * implementation and swapping it in `getDataStore()`.
  */
 import type { ActiveSession, AppData, Draft, ExportBundle, SessionRecord, Settings, TimerState } from '../types';
+import { demoKV } from './demo';
 
 export interface DataStore {
   loadAll(): Promise<AppData>;
@@ -217,6 +218,10 @@ export function getDataStore(): DataStore {
   if (!instance) {
     let kv: KV;
     try {
+      if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('demo')) {
+        instance = new LocalStore(demoKV());
+        return instance;
+      }
       kv = window.localStorage;
       kv.setItem(`${PREFIX}probe`, '1');
       kv.removeItem(`${PREFIX}probe`);

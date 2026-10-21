@@ -1,6 +1,7 @@
 import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { EXERCISES } from '../data/exercises';
 import { BODY_PARTS, EQUIPMENT } from '../data/meta';
+import { byPopularity } from '../data/popularity';
 import { isAvailable, matchesSearch } from '../lib/filter';
 import { useAppStore } from '../store/AppStore';
 import type { Exercise } from '../types';
@@ -9,6 +10,9 @@ import { ExerciseRow } from '../components/ExerciseRow';
 import { SessionTray } from '../components/SessionTray';
 import { EmptyState, Segmented } from '../components/Controls';
 import { IconChevron, IconDumbbell, IconSearch, IconX } from '../components/Icons';
+
+/** Exercises shown when a section is first opened; the rest sit behind "Show more". */
+const PREVIEW_COUNT = 7;
 
 interface Group {
   id: string;
@@ -22,9 +26,10 @@ export default function ExercisesPage() {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [showAll, setShowAll] = useState<Record<string, boolean>>({});
 
   const groups: Group[] = useMemo(() => {
-    const visible = EXERCISES.filter((e) => isAvailable(e, equipment) && matchesSearch(e, deferredQuery));
+    const visible = byPopularity(EXERCISES).filter((e) => isAvailable(e, equipment) && matchesSearch(e, deferredQuery));
     const list =
       browseMode === 'bodyPart'
         ? BODY_PARTS.map((b) => ({ id: b.id, label: b.label, items: visible.filter((e) => e.bodyPart === b.id) }))
@@ -90,13 +95,20 @@ export default function ExercisesPage() {
       {groups.map((g) => {
         const key = `${browseMode}:${g.id}`;
         const open = searching || !collapsed[key];
+        const full = searching || showAll[key];
+        const shown = full ? g.items : g.items.slice(0, PREVIEW_COUNT);
+        const hidden = g.items.length - shown.length;
         return (
           <section key={key} className="section">
             <button
               type="button"
               className="section-head"
               aria-expanded={open}
-              onClick={() => setCollapsed((c) => ({ ...c, [key]: !c[key] }))}
+              onClick={() => {
+                setCollapsed((c) => ({ ...c, [key]: !c[key] }));
+                // Re-opening a section starts from the short list again.
+                setShowAll((s) => ({ ...s, [key]: false }));
+              }}
             >
               <IconChevron className={`chev${open ? ' open' : ''}`} />
               <h2>{g.label}</h2>
@@ -105,21 +117,33 @@ export default function ExercisesPage() {
               </span>
             </button>
             {open && (
-              <ul className="ex-list fade-in">
-                {g.items.map((ex) => {
-                  const added = isPlanned(ex.id);
-                  return (
-                    <ExerciseRow
-                      key={ex.id}
-                      ex={ex}
-                      added={added}
-                      removable={!added || canRemovePlanned(ex.id)}
-                      onToggle={toggle}
-                      showBodyPart={browseMode === 'equipment'}
-                    />
-                  );
-                })}
-              </ul>
+              <>
+                <ul className="ex-list fade-in">
+                  {shown.map((ex) => {
+                    const added = isPlanned(ex.id);
+                    return (
+                      <ExerciseRow
+                        key={ex.id}
+                        ex={ex}
+                        added={added}
+                        removable={!added || canRemovePlanned(ex.id)}
+                        onToggle={toggle}
+                        showBodyPart={browseMode === 'equipment'}
+                      />
+                    );
+                  })}
+                </ul>
+                {hidden > 0 && (
+                  <button
+                    type="button"
+                    className="btn soft block show-more"
+                    onClick={() => setShowAll((s) => ({ ...s, [key]: true }))}
+                  >
+                    Show {hidden} more
+                    <IconChevron className="chev open" />
+                  </button>
+                )}
+              </>
             )}
           </section>
         );

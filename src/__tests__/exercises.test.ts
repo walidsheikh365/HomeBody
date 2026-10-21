@@ -3,6 +3,7 @@ import { EXERCISES } from '../data/exercises';
 import { BODY_PARTS, EQUIPMENT } from '../data/meta';
 import { isAvailable } from '../lib/filter';
 import { DEFAULT_SETTINGS } from '../lib/storage';
+import { RANKED, byPopularity } from '../data/popularity';
 
 describe('exercise library', () => {
   it('has 120+ exercises with unique ids', () => {
@@ -37,6 +38,20 @@ describe('exercise library', () => {
     const visible = EXERCISES.filter((e) => isAvailable(e, bwOnly));
     expect(visible.length).toBeGreaterThan(40);
     expect(visible.every((e) => e.equipment.every((q) => q === 'bodyweight'))).toBe(true);
+  });
+});
+
+describe('popularity ranking', () => {
+  it('only lists real exercises, each once', () => {
+    const ids = new Set(EXERCISES.map((e) => e.id));
+    for (const id of RANKED) expect(ids.has(id), id).toBe(true);
+    expect(new Set(RANKED).size).toBe(RANKED.length);
+  });
+
+  it('orders most popular first and keeps every exercise', () => {
+    const sorted = byPopularity(EXERCISES);
+    expect(sorted[0].id).toBe('push-up');
+    expect(sorted.length).toBe(EXERCISES.length);
   });
 });
 
